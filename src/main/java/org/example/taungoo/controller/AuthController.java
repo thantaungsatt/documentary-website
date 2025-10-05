@@ -2,9 +2,9 @@ package org.example.taungoo.controller;
 
 
 import org.example.taungoo.dto.LoginRequest;
+import org.example.taungoo.dto.LoginResponse;
 import org.example.taungoo.security.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,9 +15,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
-        String response = authService.login(loginRequest);
-        return ResponseEntity.ok(response);
+    public LoginResponse login(@RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
     }
-
 }

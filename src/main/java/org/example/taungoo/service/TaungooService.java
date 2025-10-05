@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -68,7 +69,9 @@ public class TaungooService {
             category.setCategoryName(categoryName);
             categoryDao.save(category);
         }
-        User user = userDao.findByUsername(username).orElseThrow(EntityNotFoundException::new);
+        User user = userDao.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
+
         Post post = new Post();
         post.setTitle(title);
         post.setContent(content);
@@ -81,6 +84,56 @@ public class TaungooService {
         category.addPost(post);
         postDao.save(post);
         return "Post created successfully";
+    }
+
+    @Transactional
+    public String updatePost(Long id, String title, String content, boolean featured, String categoryName, MultipartFile image) throws IOException {
+        Post post = postDao.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        post.setTitle(title);
+        post.setContent(content);
+        post.setFeatured(featured);
+
+        // handle category
+        Category category = categoryDao.findByCategoryName(categoryName)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        post.setCategory(category);
+
+        // update image only if new image is uploaded
+        if (image != null && !image.isEmpty()) {
+            post.setImage(image.getBytes());
+        }
+
+        postDao.save(post);
+        return "Post updated successfully!";
+    }
+
+    @Transactional
+    public void deletePost(Long id) {
+        if (!postDao.existsById(id)) {
+            throw new EntityNotFoundException("Post not found");
+        }
+        postDao.deleteById(id);
+    }
+
+    @Transactional
+    public PostDto getPostById(Long id) {
+        Post post = postDao.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        String imageBase64 = post.getImage() != null ? Base64.getEncoder().encodeToString(post.getImage()) : null;
+
+        return new PostDto(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.isFeatured(),
+                imageBase64,              // <-- send as Base64 string
+                post.getCreatedAt().toString(),
+                post.getCategory().getCategoryName(),
+                post.getUser().getUsername()
+        );
     }
 
     public List<PostDto> getAllPosts() {
@@ -104,6 +157,10 @@ public class TaungooService {
             category.getCategoryName(),
             category.getDescription()
         );
+    }
+
+    public List<PostDto> findFeaturedPost() {
+        return postDao.findByFeaturedTrue();
     }
 
 }

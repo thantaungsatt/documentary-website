@@ -16,19 +16,32 @@ public class PostDto {
     private String title;
     private String content;
     private boolean featured;
-    private String imageBase64;
+    private String imageBase64; // <-- changed from byte[]
     private String createdAt;
     private String category;
     private String username;
 
-    public PostDto(long postId, String title, String content, boolean featured, byte[] imageBase64, String createdAt, String category, String username) {
-        super();
+    // Constructor for JPQL queries (accepts byte[])
+    public PostDto(long postId, String title, String content, boolean featured,
+                   byte[] image, String createdAt, String category, String username) {
         this.postId = postId;
         this.title = title;
         this.content = content;
         this.featured = featured;
-        this.imageBase64 = imageBase64 !=null ? Base64.getEncoder()
-                .encodeToString(imageBase64) : null;
+        this.imageBase64 = image != null ? Base64.getEncoder().encodeToString(image) : null;
+        this.createdAt = createdAt;
+        this.category = category;
+        this.username = username;
+    }
+
+    // Constructor for service layer (accepts String)
+    public PostDto(long postId, String title, String content, boolean featured,
+                   String imageBase64, String createdAt, String category, String username) {
+        this.postId = postId;
+        this.title = title;
+        this.content = content;
+        this.featured = featured;
+        this.imageBase64 = imageBase64;
         this.createdAt = createdAt;
         this.category = category;
         this.username = username;

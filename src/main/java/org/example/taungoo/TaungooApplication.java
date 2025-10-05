@@ -19,7 +19,7 @@ public class TaungooApplication {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Bean
+    @Bean @Profile("dev")
     public ApplicationRunner run(){
         return r->{
             User user=
